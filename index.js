@@ -3,42 +3,32 @@ const fs = require('fs');
 const csvParser = require('csv-parser');
 
 const app = express();
-const port = 3000; 
+const port = 3000;
 
-const frequencyThreshold= 500000;
-const frequencyThresholdString= '500000';
+const frequencyThreshold = 500000;
+const frequencyThresholdString = '500000';
 
-app.get('/read-csv-num-freq', (req, res) => {
-    const nomes = [];
+app.get('/read-csv', (req, res) => {
+  const method = req.query.method || 'num';
 
-    fs.createReadStream('ibge-fem-10000 (3).csv')
-    .pipe(csvParser({ separator: ',' })) 
+  const nomes = [];
+
+  fs.createReadStream('ibge-fem-10000 (3).csv')
+    .pipe(csvParser({ separator: ',' }))
     .on('data', (row) => {
-        const freq = row.freq;
-        if (freq >= frequencyThreshold) {
+      const freq = parseInt(row.freq);
+      const freqString = parseInt(row.freq);
+
+      if (method === 'num' && !isNaN(freq) && freq >= frequencyThreshold) {
         nomes.push(row.nome);
         console.log(row.nome);
-        }
-    })
-    .on('end', () => {
-        res.send(nomes);
-    });
-});
-
-app.get('/read-csv-string-freq', (req, res) => {
-    const nomes = [];
-
-    fs.createReadStream('ibge-fem-10000 (3).csv')
-    .pipe(csvParser({ separator: ',' })) 
-    .on('data', (row) => {
-        const freq = row.freq;
-        if (freq >= frequencyThresholdString) {
+      } else if (method === 'string' && !isNaN(freq) && freqString >= frequencyThresholdString) {
         nomes.push(row.nome);
         console.log(row.nome);
-        }
+      }
     })
     .on('end', () => {
-        res.send(nomes);
+      res.send(nomes);
     });
 });
 
